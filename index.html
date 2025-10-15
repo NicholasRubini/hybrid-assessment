@@ -2,24 +2,26 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Hybrid Athlete Assessment – Classificazioni</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Hybrid Athlete Standards</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Anti-alias fonts a bit for nicer look in iframes */
+    html, body, #root { height: 100%; }
     html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    /* Safe area for iOS notch */
+    body { padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
   </style>
 </head>
-<body class="min-h-screen bg-slate-900">
+<body class="min-h-[100svh] bg-slate-900">
   <div id="root"></div>
 
-  <!-- React + Babel (for a single-file, iframe‑friendly build) -->
+  <!-- React + Babel (single-file, iframe‑friendly) -->
   <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <script type="text/babel">
-    const { useState, useRef } = React;
+    const { useState, useRef, useEffect } = React;
 
     // ---------- UTILS ----------
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
@@ -44,14 +46,12 @@
     };
 
     // ---------- CLASSIFICATIONS (your thresholds) ----------
-    // For each weight bracket we set anchor points for piecewise‑linear scoring
-    // S = Scarso boundary, I = Intermedio, A = Avanzato, E = Elite
     const THRESHOLDS = {
       '70-75': {
-        squatRatio: { S: 1.9, I: 2.2, A: 2.3, E: 2.5 }, // higher is better
-        run1k:      { S: 260, I: 230, A: 215, E: 200 },  // lower is better
+        squatRatio: { S: 1.9, I: 2.2, A: 2.3, E: 2.5 },
+        run1k:      { S: 260, I: 230, A: 215, E: 200 },
         run5k:      { S: 1530, I: 1380, A: 1320, E: 1230 },
-        rhr:        { S: 65, I: 55, A: 50, E: 45 }       // optional metric
+        rhr:        { S: 65, I: 55, A: 50, E: 45 }
       },
       '75-80': {
         squatRatio: { S: 1.8, I: 2.1, A: 2.2, E: 2.4 },
@@ -87,9 +87,7 @@
     const scoreFromAnchors = (value, anchors, better = 'higher') => {
       const SCALE = { S: 80, I: 92, A: 100, E: 110 };
       const MIN = 60, MAX = 118;
-
       if (value == null) return null;
-
       const interp = (x, x0, y0, x1, y1) => y0 + ( (x - x0) * (y1 - y0) ) / (x1 - x0);
 
       if (better === 'higher') {
@@ -98,23 +96,20 @@
         if (value <= I) return interp(value, S, SCALE.S, I, SCALE.I);
         if (value <= A) return interp(value, I, SCALE.I, A, SCALE.A);
         if (value <= E) return interp(value, A, SCALE.A, E, SCALE.E);
-        // above elite → slight bonus, capped
         return clamp(interp(value, E, SCALE.E, E + (E - A), SCALE.E + 4), MIN, MAX);
       } else {
-        // lower is better
-        const { S, I, A, E } = anchors; // here S > I > A > E generally
+        const { S, I, A, E } = anchors; // S > I > A > E
         if (value >= S) return clamp(interp(value, S, SCALE.S, I, SCALE.I), MIN, MAX);
         if (value >= I) return interp(value, S, SCALE.S, I, SCALE.I);
         if (value >= A) return interp(value, I, SCALE.I, A, SCALE.A);
         if (value >= E) return interp(value, A, SCALE.A, E, SCALE.E);
-        // faster/better than elite → slight bonus, capped
         return clamp(interp(value, E, SCALE.E, Math.max(1, E - (I - A)), SCALE.E + 4), MIN, MAX);
       }
     };
 
     const levelFromValue = (value, anchors, better = 'higher') => {
       if (value == null) return null;
-      const { I, A, E } = anchors; // Scarso boundary not needed for level check
+      const { I, A, E } = anchors;
       if (better === 'higher') {
         if (value >= E) return 'ELITE';
         if (value >= A) return 'AVANZATO';
@@ -143,15 +138,87 @@
       return { text: 'ATLETA IBRIDO IN SVILUPPO (SCARSO)', color: 'text-orange-400', emoji: '📈', desc: 'Costruisci fondamenta tecniche e capacità di base: potenziale di crescita alto.' };
     };
 
+    // ---------- PROGRAM RECOMMENDER ----------
+    const PROGRAMS = {
+      A: {
+        key: 'A', title: "Il Lifter che Corre", emoji: '💪🏃',
+        profile: 'Lifter Avanzato + Runner Principiante',
+        focus: ['Mantenere forza e massa', 'Costruire base aerobica (Z1–Z2 + tecnica)', 'Minimizzare interferenza pesi/corsa'],
+        structure: { freq: '3 Strength + 3 Running', duration: '12 settimane' },
+        color: 'from-orange-600 to-red-600'
+      },
+      B: {
+        key: 'B', title: "L'Equilibrato", emoji: '⚖️',
+        profile: 'Lifter Intermedio + Runner Principiante',
+        focus: ['Crescita bilanciata di forza e aerobica', 'Progressioni moderate e continue', 'Educazione su entrambe le discipline'],
+        structure: { freq: '3 Strength + 3 Running', duration: '12 settimane' },
+        color: 'from-green-600 to-emerald-600'
+      },
+      C: {
+        key: 'C', title: 'Il Novizio Totale', emoji: '🌱',
+        profile: 'Lifter Principiante + Runner Principiante',
+        focus: ['Fondamenta tecniche', 'Volume conservativo', 'Prevenzione infortuni'],
+        structure: { freq: '3 Strength + 2–3 Running', duration: '8–12 settimane' },
+        color: 'from-yellow-600 to-amber-600'
+      },
+      D: {
+        key: 'D', title: "L'Hybrid Avanzato", emoji: '🔥',
+        profile: 'Lifter Avanzato + Runner Intermedio/Avanzato',
+        focus: ['Periodizzazione avanzata', 'Alti volumi su entrambi i fronti', 'Gestione interferenza e picchi'],
+        structure: { freq: '3–4 Strength + 4 Running', duration: '12–16 settimane' },
+        color: 'from-purple-600 to-pink-600'
+      },
+      E: {
+        key: 'E', title: 'Il Runner che Solleva', emoji: '🏃💪',
+        profile: 'Runner Avanzato + Lifter Principiante/Intermedio',
+        focus: ['Mantenere capacità aerobiche', 'Costruire forza fondamentale', 'Migliorare economia di corsa con la forza'],
+        structure: { freq: '2–3 Strength + 3–4 Running', duration: '12 settimane' },
+        color: 'from-blue-600 to-cyan-600'
+      }
+    };
+
+    const recommendProgramFromScores = ({ squatScore, runAvgScore }) => {
+      // Thresholds aligned with badges
+      const HIGH = 100; // Avanzato+
+      const LOW  = 92;  // sotto Intermedio => Scarso
+
+      const squatHigh = squatScore >= HIGH;
+      const squatLow  = squatScore < LOW;
+      const runHigh   = runAvgScore != null && runAvgScore >= HIGH;
+      const runLow    = runAvgScore == null ? true : runAvgScore < LOW; // se mancano dati corsa, consideriamo low per prudenza
+
+      if (squatHigh && runHigh) return PROGRAMS.D;
+      if (squatHigh && runLow)  return PROGRAMS.A;
+      if (runHigh && squatLow)  return PROGRAMS.E;
+      if (squatLow && runLow)   return PROGRAMS.C;
+      return PROGRAMS.B;
+    };
+
+    const CTA_URL = 'https://www.nicholasrubini.it/prodotto/scheda-hybrid-athlete/';
+
     const HybridAthleteAssessment = () => {
       const [weight, setWeight] = useState('');
-      const [height, setHeight] = useState(''); // kept for future use / ratios visual
+      const [height, setHeight] = useState('');
       const [squat, setSquat] = useState('');
       const [run1k, setRun1k] = useState('');
       const [run5k, setRun5k] = useState('');
-      const [restingHR, setRestingHR] = useState(''); // optional
+      const [restingHR, setRestingHR] = useState('');
       const [results, setResults] = useState(null);
       const canvasRef = useRef(null);
+
+      // Post height to parent (WordPress) for auto-resize
+      const postHeight = () => {
+        const h = document.documentElement.scrollHeight || document.body.scrollHeight;
+        window.parent && window.parent.postMessage({ type: 'HYBRID_ASSESS_HEIGHT', height: h }, '*');
+      };
+      useEffect(() => {
+        postHeight();
+        const onR = () => postHeight();
+        window.addEventListener('resize', onR);
+        const id = setInterval(postHeight, 800); // piccolo ping per iframe
+        return () => { window.removeEventListener('resize', onR); clearInterval(id); };
+      }, []);
+      useEffect(() => { postHeight(); }, [results]);
 
       const calculateResults = () => {
         const w = parseFloat(weight);
@@ -163,7 +230,7 @@
 
         const T = THRESHOLDS[cat];
 
-        // SQUAT (use ratio)
+        // SQUAT (ratio)
         const squatKg = parseFloat(squat);
         const squatRatio = squatKg / w;
         const squatScore = scoreFromAnchors(squatRatio, T.squatRatio, 'higher');
@@ -176,7 +243,6 @@
           run1kScore = scoreFromAnchors(run1kSec, T.run1k, 'lower');
           run1kLevel = levelFromValue(run1kSec, T.run1k, 'lower');
         }
-
         // 5k
         let run5kSec = null, run5kScore = null, run5kLevel = null;
         if (run5k && timeToSeconds(run5k) != null) {
@@ -185,8 +251,8 @@
           run5kLevel = levelFromValue(run5kSec, T.run5k, 'lower');
         }
 
-        // Resting HR (optional – shown but does NOT affect average if you prefer; set includeRHR = true to include)
-        const includeRHR = false; // toggle to true if you want RHR to weigh in the score
+        // RHR optional (not included in average by default)
+        const includeRHR = false;
         let rhrVal = null, rhrScore = null, rhrLevel = null;
         if (restingHR && !Number.isNaN(Number(restingHR))) {
           rhrVal = Math.round(Number(restingHR));
@@ -194,12 +260,14 @@
           rhrLevel = levelFromValue(rhrVal, T.rhr, 'lower');
         }
 
-        // Average (core tests only: Squat + 1k + 5k if available)
+        // Average (Squat + running parts that exist)
         const scores = [squatScore];
-        if (run1kScore != null) scores.push(run1kScore);
-        if (run5kScore != null) scores.push(run5kScore);
+        const runScores = [];
+        if (run1kScore != null) { scores.push(run1kScore); runScores.push(run1kScore); }
+        if (run5kScore != null) { scores.push(run5kScore); runScores.push(run5kScore); }
         if (includeRHR && rhrScore != null) scores.push(rhrScore);
         const avgScore = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+        const runAvgScore = runScores.length ? (runScores.reduce((a,b)=>a+b,0)/runScores.length) : null;
 
         const tests = [];
         tests.push({
@@ -207,63 +275,45 @@
           value: squatKg, ratio: squatRatio.toFixed(2),
           thresholds: T.squatRatio,
           standardText: `Soglie: I ≥ ${T.squatRatio.I.toFixed(2)}x • A ≥ ${T.squatRatio.A.toFixed(2)}x • E ≥ ${T.squatRatio.E.toFixed(2)}x`,
-          score: Math.round(squatScore),
-          level: squatLevel,
-          contributes: true,
+          score: Math.round(squatScore), level: squatLevel, contributes: true,
         });
 
         if (run1kSec != null) {
-          tests.push({
-            name: '1k Run', icon: '🏃', unit: '',
-            value: secondsToTime(run1kSec), ratio: null,
+          tests.push({ name: '1k Run', icon: '🏃', unit: '', value: secondsToTime(run1kSec),
             thresholds: T.run1k,
             standardText: `Soglie: I ≤ ${secondsToTime(T.run1k.I)} • A ≤ ${secondsToTime(T.run1k.A)} • E ≤ ${secondsToTime(T.run1k.E)}`,
-            score: Math.round(run1kScore),
-            level: run1kLevel,
-            contributes: true,
-          });
+            score: Math.round(run1kScore), level: run1kLevel, contributes: true });
         } else {
           tests.push({ name: '1k Run', icon: '🏃', placeholder: true, contributes: true });
         }
 
         if (run5kSec != null) {
-          tests.push({
-            name: '5k Run', icon: '🏃‍♂️', unit: '',
-            value: secondsToTime(run5kSec), ratio: null,
+          tests.push({ name: '5k Run', icon: '🏃‍♂️', unit: '', value: secondsToTime(run5kSec),
             thresholds: T.run5k,
             standardText: `Soglie: I ≤ ${secondsToTime(T.run5k.I)} • A ≤ ${secondsToTime(T.run5k.A)} • E ≤ ${secondsToTime(T.run5k.E)}`,
-            score: Math.round(run5kScore),
-            level: run5kLevel,
-            contributes: true,
-          });
+            score: Math.round(run5kScore), level: run5kLevel, contributes: true });
         } else {
           tests.push({ name: '5k Run', icon: '🏃‍♂️', placeholder: true, contributes: true });
         }
 
         if (rhrVal != null) {
-          tests.push({
-            name: 'Battito a Riposo', icon: '❤️', unit: 'bpm',
-            value: `${rhrVal}`,
+          tests.push({ name: 'Battito a Riposo', icon: '❤️', unit: 'bpm', value: `${rhrVal}`,
             thresholds: T.rhr,
             standardText: `Più basso è, meglio è. Riferimenti: I ≤ ${T.rhr.I} • A ≤ ${T.rhr.A} • E ≤ ${T.rhr.E}`,
             note: includeRHR ? null : 'Non influisce sul punteggio',
-            score: Math.round(rhrScore),
-            level: rhrLevel,
-            contributes: includeRHR,
-          });
+            score: Math.round(rhrScore), level: rhrLevel, contributes: includeRHR });
         } else {
           tests.push({ name: 'Battito a Riposo', icon: '❤️', placeholder: true, contributes: includeRHR });
         }
 
         const completedTests = tests.filter(t => !t.placeholder).length;
-        const totalPossibleTests = tests.length; // 4 in this build
+        const totalPossibleTests = tests.length;
+
+        // Program recommendation
+        const program = recommendProgramFromScores({ squatScore: Math.round(squatScore), runAvgScore: runAvgScore != null ? Math.round(runAvgScore) : null });
 
         setResults({
-          category: cat.replace('-', '–') + ' kg',
-          tests,
-          avgScore,
-          completedTests,
-          totalPossibleTests,
+          category: cat.replace('-', '–') + ' kg', tests, avgScore, completedTests, totalPossibleTests, program
         });
       };
 
@@ -274,14 +324,12 @@
         const width = 1080, height = 1920;
         canvas.width = width; canvas.height = height;
 
-        // bg
         const grad = ctx.createLinearGradient(0, 0, 0, height);
         grad.addColorStop(0, '#0f172a'); grad.addColorStop(0.5, '#1e293b'); grad.addColorStop(1, '#0f172a');
         ctx.fillStyle = grad; ctx.fillRect(0, 0, width, height);
 
         const status = overallText(results.avgScore);
 
-        // title
         ctx.fillStyle = '#fff'; ctx.textAlign = 'center';
         ctx.font = 'bold 80px Arial';
         ctx.fillText('HYBRID ATHLETE', width/2, 200);
@@ -309,26 +357,24 @@
         canvas.toBlob((blob) => {
           if (!blob) { alert('Errore durante la creazione immagine.'); return; }
           const url = URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url; a.download = 'hybrid-athlete-results.png';
-          document.body.appendChild(a); a.click();
-          document.body.removeChild(a); URL.revokeObjectURL(url);
+          const a = document.createElement('a'); a.href = url; a.download = 'hybrid-athlete-results.png';
+          document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
           alert('Immagine scaricata nella cartella Download.');
         }, 'image/png');
       };
 
       return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-4 md:p-8">
-          <div className="max-w-4xl mx-auto">
+        <div className="min-h-[100svh] bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-3 sm:px-4 md:px-6 py-4 md:py-8">
+          <div className="max-w-4xl mx-auto w-full">
             {/* Header */}
             <div className="text-center mb-6 md:mb-8">
-              <div className="flex items-center justify-center gap-2 md:gap-3 mb-3 md:mb-4">
+              <div className="flex items-center justify-center gap-3 md:gap-4 mb-3 md:mb-4">
                 <div className="text-yellow-400 text-3xl md:text-4xl">⚡</div>
-                <h1 className="text-3xl md:text-5xl font-bold text-white">Hybrid Athlete</h1>
+                <h1 className="text-3xl md:text-5xl font-bold text-white leading-tight">Hybrid Athlete Standards</h1>
                 <div className="text-blue-400 text-3xl md:text-4xl">📈</div>
               </div>
               <p className="text-slate-300 text-base md:text-lg">Valutazione Performance Completa</p>
-              <p className="text-slate-400 text-xs md:text-sm mt-2">Forza. Velocità. Resistenza. Salute.</p>
+              <p className="text-slate-400 text-xs md:text-sm mt-2">Forza · Velocità · Resistenza · Salute</p>
             </div>
 
             {/* Form Card */}
@@ -338,39 +384,39 @@
                 I Tuoi Dati
               </h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">Peso (kg) <span className="text-red-400">*</span></label>
-                  <input type="number" step="0.1" value={weight} onChange={(e)=>setWeight(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="number" inputMode="decimal" step="0.1" value={weight} onChange={(e)=>setWeight(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">Altezza (cm) <span className="text-red-400">*</span></label>
-                  <input type="number" value={height} onChange={(e)=>setHeight(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="number" inputMode="numeric" value={height} onChange={(e)=>setHeight(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">Squat (kg) <span className="text-red-400">*</span></label>
-                  <input type="number" step="0.5" value={squat} onChange={(e)=>setSquat(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="number" inputMode="decimal" step="0.5" value={squat} onChange={(e)=>setSquat(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">1k Run (mm:ss) <span className="text-yellow-400 text-sm">- almeno uno *</span></label>
-                  <input type="text" value={run1k} onChange={(e)=>setRun1k(e.target.value)} placeholder="es. 3:59" className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="text" inputMode="numeric" placeholder="es. 3:59" value={run1k} onChange={(e)=>setRun1k(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">5k Run (mm:ss) <span className="text-yellow-400 text-sm">- almeno uno *</span></label>
-                  <input type="text" value={run5k} onChange={(e)=>setRun5k(e.target.value)} placeholder="es. 24:30" className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="text" inputMode="numeric" placeholder="es. 24:30" value={run5k} onChange={(e)=>setRun5k(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-slate-300 mb-2 font-medium">Battito a Riposo (bpm) <span className="text-slate-500 text-sm">- opzionale</span></label>
-                  <input type="number" step="1" min="30" max="100" value={restingHR} onChange={(e)=>setRestingHR(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="number" inputMode="numeric" step="1" min="30" max="100" value={restingHR} onChange={(e)=>setRestingHR(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
               </div>
 
-              <div className="mt-4 p-3 bg-slate-700 bg-opacity-50 rounded-lg border border-slate-600 text-slate-400 text-xs">
-                <span className="text-red-400">*</span> Obbligatorio · 
+              <div className="mt-4 p-3 bg-slate-700/60 rounded-lg border border-slate-600 text-slate-400 text-xs">
+                <span className="text-red-400">*</span> Obbligatorio ·
                 <span className="text-yellow-400"> Almeno uno *</span> = inserisci 1k o 5k
               </div>
 
-              <button onClick={calculateResults} className="w-full mt-6 md:mt-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold py-4 md:py-5 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all transform hover:scale-105 shadow-lg text-base md:text-lg">
+              <button onClick={calculateResults} className="w-full mt-6 md:mt-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold py-4 md:py-5 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all transform hover:scale-[1.02] shadow-lg text-base md:text-lg">
                 VALUTA PERFORMANCE
               </button>
             </div>
@@ -399,18 +445,51 @@
                   </div>
                 </div>
 
+                {/* Program Recommendation */}
+                {results.program && (
+                  <div className={`bg-gradient-to-r ${results.program.color} rounded-2xl p-6 md:p-8 shadow-2xl border-2 border-white/20`}>
+                    <div className="text-center mb-4 md:mb-6">
+                      <div className="text-4xl md:text-5xl mb-2 md:mb-3">{results.program.emoji}</div>
+                      <h3 className="text-xl md:text-3xl font-bold text-white mb-1 md:mb-2">
+                        Programma {results.program.key} – {results.program.title}
+                      </h3>
+                      <p className="text-white/90 text-xs md:text-sm font-medium mb-1">
+                        {results.program.profile}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:mb-6">
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <h4 className="text-white font-bold mb-3 text-sm md:text-base">Focus</h4>
+                        <ul className="space-y-2 list-none">
+                          {results.program.focus.map((f,i)=>(<li key={i} className="text-white/90 text-xs md:text-sm flex gap-2"><span className="text-yellow-300">•</span><span>{f}</span></li>))}
+                        </ul>
+                      </div>
+                      <div className="bg-black/20 rounded-lg p-4">
+                        <h4 className="text-white font-bold mb-3 text-sm md:text-base">Struttura</h4>
+                        <p className="text-white text-sm"><span className="opacity-70">Frequenza: </span><span className="font-semibold">{results.program.structure.freq}</span></p>
+                        <p className="text-white text-sm mt-1"><span className="opacity-70">Durata: </span><span className="font-semibold">{results.program.structure.duration}</span></p>
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <a href={CTA_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-6 md:px-8 py-4 rounded-lg hover:bg-slate-100 transition-all transform hover:scale-105 shadow-xl text-sm md:text-base">
+                        Scopri il Programma →
+                      </a>
+                    </div>
+                  </div>
+                )}
+
                 {/* Tests Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
                   {results.tests.map((t, idx) => {
                     if (t.placeholder) {
                       return (
-                        <div key={idx} className="rounded-xl p-4 md:p-5 border-2 border-slate-600 bg-slate-700 bg-opacity-50">
+                        <div key={idx} className="rounded-xl p-4 md:p-5 border-2 border-slate-600 bg-slate-700/60">
                           <div className="flex items-start justify-between mb-2 md:mb-3">
                             <div className="flex items-center gap-2">
                               <span className="text-xl md:text-2xl opacity-50">{t.icon}</span>
                               <h4 className="font-bold text-base md:text-lg text-slate-400">{t.name}</h4>
                             </div>
-                            <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-slate-600 text-slate-400">Compila</span>
+                            <span className="px-2 md:px-3 py-1 rounded-full text-xs font-bold bg-slate-600 text-slate-300">Compila</span>
                           </div>
                           <div className="text-center py-3 md:py-4">
                             <p className="text-slate-500 text-xs md:text-sm">Non disponibile</p>
@@ -419,7 +498,6 @@
                         </div>
                       );
                     }
-
                     const badge = perfBadge(t.score);
                     return (
                       <div key={idx} className={`rounded-xl p-4 md:p-5 border-2 ${badge.color}`}>
@@ -433,7 +511,6 @@
                             <div className="text-xl md:text-2xl font-bold">{t.score}</div>
                           </div>
                         </div>
-
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
                             <span className="text-xs md:text-sm font-medium">Tuo valore</span>
@@ -449,10 +526,8 @@
                             <span className="text-xs md:text-sm font-medium">Riferimenti</span>
                             <span className="text-xs md:text-sm font-semibold">{t.standardText}</span>
                           </div>
-                          {t.note && (
-                            <div className="text-[11px] text-slate-500 pt-1">{t.note}</div>
-                          )}
-                          <div className="mt-2 md:mt-3 bg-white bg-opacity-20 rounded-full h-2 overflow-hidden">
+                          {t.note && (<div className="text-[11px] text-slate-500 pt-1">{t.note}</div>)}
+                          <div className="mt-2 md:mt-3 bg-white/20 rounded-full h-2 overflow-hidden">
                             <div className={`${badge.badge} h-full`} style={{ width: `${Math.min(t.score, 115)}%` }} />
                           </div>
                         </div>
@@ -462,13 +537,13 @@
                 </div>
 
                 {/* Share Card */}
-                <div className="bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl p-4 md:p-6 shadow-2xl border-2 border-white border-opacity-20 text-center">
+                <div className="bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl p-4 md:p-6 shadow-2xl border-2 border-white/20 text-center">
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">Condividi i tuoi risultati</h3>
-                  <p className="text-white text-opacity-90 text-xs md:text-sm mb-4">Scarica un'immagine ottimizzata per Instagram Story</p>
+                  <p className="text-white/90 text-xs md:text-sm mb-4">Scarica un'immagine ottimizzata per Instagram Story</p>
                   <button onClick={generateInstagramStory} className="inline-flex items-center gap-2 bg-white text-purple-600 font-bold px-6 md:px-8 py-4 rounded-lg hover:bg-purple-50 transition-all transform hover:scale-105 shadow-xl text-sm md:text-base">
                     Scarica immagine
                   </button>
-                  <p className="text-white text-opacity-70 text-xs mt-3">Il file verrà scaricato automaticamente</p>
+                  <p className="text-white/70 text-xs mt-3">Il file verrà scaricato automaticamente</p>
                 </div>
               </div>
             )}
@@ -481,26 +556,14 @@
                 <div className="bg-slate-800 rounded-xl p-4 md:p-6 border border-slate-700 mb-4">
                   <h4 className="text-slate-300 font-bold mb-3 text-sm md:text-base">Sistema di punteggio (basato sulle tue classificazioni)</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3 text-xs">
-                    <div className="bg-purple-900 bg-opacity-30 rounded p-2">
-                      <div className="font-bold text-purple-400 text-xs">ELITE</div>
-                      <div className="text-slate-400">≥110</div>
-                    </div>
-                    <div className="bg-green-900 bg-opacity-30 rounded p-2">
-                      <div className="font-bold text-green-400 text-xs">AVANZATO</div>
-                      <div className="text-slate-400">100–109</div>
-                    </div>
-                    <div className="bg-blue-900 bg-opacity-30 rounded p-2">
-                      <div className="font-bold text-blue-400 text-xs">INTERMEDIO</div>
-                      <div className="text-slate-400">92–99</div>
-                    </div>
-                    <div className="bg-orange-900 bg-opacity-30 rounded p-2">
-                      <div className="font-bold text-orange-400 text-xs">SCARSO</div>
-                      <div className="text-slate-400">≤91</div>
-                    </div>
+                    <div className="bg-purple-900/30 rounded p-2"><div className="font-bold text-purple-400 text-xs">ELITE</div><div className="text-slate-400">≥110</div></div>
+                    <div className="bg-green-900/30 rounded p-2"><div className="font-bold text-green-400 text-xs">AVANZATO</div><div className="text-slate-400">100–109</div></div>
+                    <div className="bg-blue-900/30 rounded p-2"><div className="font-bold text-blue-400 text-xs">INTERMEDIO</div><div className="text-slate-400">92–99</div></div>
+                    <div className="bg-orange-900/30 rounded p-2"><div className="font-bold text-orange-400 text-xs">SCARSO</div><div className="text-slate-400">≤91</div></div>
                   </div>
                 </div>
               )}
-              <p className="text-xs md:text-sm">Standard definiti da classificazioni su squat BW, 1k e 5k • Vichinghi Hybrid Training</p>
+              <p className="text-xs md:text-sm">Standard definiti su squat × BW, 1k e 5k • Vichinghi Hybrid Training</p>
             </div>
           </div>
         </div>
