@@ -156,80 +156,30 @@
 
     // ---------- PROGRAMMI ----------
     const PROGRAMS = {
-      A: {
-        key:'A',
-        title:"Il Lifter che Corre",
-        emoji:'💪🏃',
-        profile:'Lifter Avanzato + Runner Principiante',
-        focus:['Mantenere forza e massa','Base aerobica (Z1–Z2 + tecnica)','Minimizzare interferenza pesi/corsa'],
-        structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'},
-        color:'from-orange-600 to-red-600'
-      },
-      B: {
-        key:'B',
-        title:"L'Equilibrato",
-        emoji:'⚖️',
-        profile:'Lifter Intermedio + Runner Principiante',
-        focus:['Crescita bilanciata','Progressioni moderate e continue','Miglioramento costante'],
-        structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'},
-        color:'from-green-600 to-emerald-600'
-      },
-      C: {
-        key:'C',
-        title:'Il Novizio Totale',
-        emoji:'🌱',
-        profile:'Lifter Principiante + Runner Principiante',
-        focus:['Fondamenta tecniche','Volume conservativo','Prevenzione infortuni'],
-        structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'},
-        color:'from-yellow-600 to-amber-600'
-      },
-      D: {
-        key:'D',
-        title:"L'Hybrid Avanzato",
-        emoji:'🔥',
-        profile:'Lifter Avanzato + Runner Intermedio/Avanzato',
-        focus:['Periodizzazione avanzata','Buoni volumi e intensità su entrambi','Gestione interferenza e picchi'],
-        structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'},
-        color:'from-purple-600 to-pink-600'
-      },
-      E: {
-        key:'E',
-        title:'Il Runner che Solleva',
-        emoji:'🏃💪',
-        profile:'Runner Avanzato + Lifter Principiante/Intermedio',
-        focus:['Mantenere aerobica','Costruire forza fondamentale','Migliorare economia di corsa con la forza'],
-        structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'},
-        color:'from-blue-600 to-cyan-600'
-      }
+      A: { key:'A', title:"Il Lifter che Corre", emoji:'💪🏃', profile:'Lifter Avanzato + Runner Principiante',
+           focus:['Mantenere forza e massa','Base aerobica (Z1–Z2 + tecnica)','Minimizzare interferenza pesi/corsa'],
+           structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'}, color:'from-orange-600 to-red-600'},
+      B: { key:'B', title:"L'Equilibrato", emoji:'⚖️', profile:'Lifter Intermedio + Runner Principiante',
+           focus:['Crescita bilanciata','Progressioni moderate e continue','Miglioramento costante'],
+           structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'}, color:'from-green-600 to-emerald-600'},
+      C: { key:'C', title:'Il Novizio Totale', emoji:'🌱', profile:'Lifter Principiante + Runner Principiante',
+           focus:['Fondamenta tecniche','Volume conservativo','Prevenzione infortuni'],
+           structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'}, color:'from-yellow-600 to-amber-600'},
+      D: { key:'D', title:"L'Hybrid Avanzato", emoji:'🔥', profile:'Lifter Avanzato + Runner Intermedio/Avanzato',
+           focus:['Periodizzazione avanzata','Buoni volumi e intensità su entrambi','Gestione interferenza e picchi'],
+           structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'}, color:'from-purple-600 to-pink-600'},
+      E: { key:'E', title:'Il Runner che Solleva', emoji:'🏃💪', profile:'Runner Avanzato + Lifter Principiante/Intermedio',
+           focus:['Mantenere aerobica','Costruire forza fondamentale','Migliorare economia di corsa con la forza'],
+           structure:{freq:'3 Strength + 3 Running', duration:'12 settimane'}, color:'from-blue-600 to-cyan-600'}
     };
 
-    // ---------- CTA snellite (A1, B1, C1, D1, E1) ----------
+    // ---------- CTA snellite ----------
     const CTA_TEXTS = {
-      A: {
-        headline: 'Sei già forte. Ora diventa anche veloce.',
-        subhead:  'Costruisci la base aerobica e migliora nella corsa senza perdere kg sul bilanciere.',
-        button:   'Diventa un Lifter che corre →'
-      },
-      B: {
-        headline: 'Crescita bilanciata, tempi più bassi.',
-        subhead:  'Migliora la corsa senza bloccare la forza, con una struttura chiara che riduce gli infortuni.',
-        button:   'Sali di livello sia nella Forza che nella Corsa →'
-      },
-      C: {
-        headline: 'Le fondamenta prima di tutto.',
-        subhead:  'Tecnica, progressioni semplici e mirate.',
-        button:   'Inizia bene, progredisci sempre →'
-      },
-      D: {
-        headline: 'Picchi programmati su entrambi i fronti.',
-        subhead:  'Periodizzazione avanzata per PR di forza e corsa nello stesso ciclo, riducendo gli infortuni.',
-        button:   'Vai per la prestazione d’élite →'
-      },
-      E: {
-        headline: 'La forza che rende la corsa più efficiente.',
-        subhead:  'Metti kg al bilanciere, migliora l’economia di corsa e riduci gli infortuni.',
-        button:   'Inizia a sollevare… da runner →'
-      }
+      A: { headline: 'Sei già forte. Ora diventa anche veloce.', subhead: 'Costruisci la base aerobica e migliora nella corsa senza perdere kg sul bilanciere.', button: 'Diventa un Lifter che corre →' },
+      B: { headline: 'Crescita bilanciata, tempi più bassi.', subhead: 'Migliora la corsa senza bloccare la forza, con una struttura chiara che riduce gli infortuni.', button: 'Sali di livello sia nella Forza che nella Corsa →' },
+      C: { headline: 'Le fondamenta prima di tutto.', subhead: 'Tecnica, progressioni semplici e mirate.', button: 'Inizia bene, progredisci sempre →' },
+      D: { headline: 'Picchi programmati su entrambi i fronti.', subhead: 'Periodizzazione avanzata per PR di forza e corsa nello stesso ciclo, riducendo gli infortuni.', button: 'Vai per la prestazione d’élite →' },
+      E: { headline: 'La forza che rende la corsa più efficiente.', subhead: 'Metti kg al bilanciere, migliora l’economia di corsa e riduci gli infortuni.', button: 'Inizia a sollevare… da runner →' }
     };
 
     const recommendProgramFromScores = ({ squatScore, runAvgScore }) => {
@@ -393,16 +343,67 @@
         setResults({ category: cat.replace('-', '–') + ' kg', tests, avgScore, completedTests, totalPossibleTests, program });
       };
 
-      // ---------- IMG: layout (share) ----------
+      // ---------- IMG: Story 1080×1920 con margini/fit ----------
       const generateShareImage = () => {
         if (!results) { alert('Nessun risultato da condividere.'); return; }
         const canvas = canvasRef.current; if (!canvas) return;
         const ctx = canvas.getContext('2d');
+
         const W = 1080, H = 1920;
+        const SAFE_LR = 84;     // margini laterali sicuri
+        const SAFE_TOP = 140;   // margine top
+        const SAFE_BOT = 140;   // margine bottom
+        const INNER_W = W - SAFE_LR * 2;
+
         canvas.width = W; canvas.height = H;
 
-        // Helpers
-        const drawRoundedRect = (x,y,w,h,r=24,fill='#000',stroke='rgba(255,255,255,0.2)',lw=4)=>{
+        // Helpers di disegno
+        const setFont = (size, weight='normal', color='#fff', align='left') => {
+          ctx.font = `${weight} ${size}px Arial`;
+          ctx.fillStyle = color;
+          ctx.textAlign = align;
+        };
+        const measure = (text) => ctx.measureText(text).width;
+
+        // Fit singola riga: riduce il font finché non rientra nel maxWidth
+        const fitSingleLineSize = (text, baseSize, minSize, maxWidth, weight='bold') => {
+          let size = baseSize;
+          while (size > minSize) {
+            setFont(size, weight);
+            if (measure(text) <= maxWidth) break;
+            size -= 2;
+          }
+          return size;
+        };
+
+        // Wrapping a più righe con limite di width
+        const wrapText = (text, size, maxWidth, weight='normal') => {
+          setFont(size, weight);
+          const words = String(text).split(/\s+/);
+          const lines = [];
+          let cur = '';
+          for (const w of words) {
+            const test = cur ? cur + ' ' + w : w;
+            if (measure(test) <= maxWidth) cur = test;
+            else { if (cur) lines.push(cur); cur = w; }
+          }
+          if (cur) lines.push(cur);
+          return lines;
+        };
+
+        // Draw multiline centered
+        const drawLinesCenter = (lines, startY, lineH, size, weight='normal') => {
+          setFont(size, weight, '#fff', 'center');
+          let y = startY;
+          for (const ln of lines) {
+            ctx.fillText(ln, W/2, y);
+            y += lineH;
+          }
+          return y;
+        };
+
+        // Box arrotondato
+        const roundedRect = (x,y,w,h,r=28,fill='rgba(0,0,0,0.28)', stroke='rgba(255,255,255,0.25)') => {
           ctx.beginPath();
           ctx.moveTo(x+r,y);
           ctx.arcTo(x+w,y,x+w,y+h,r);
@@ -411,26 +412,7 @@
           ctx.arcTo(x,y,x+w,y,r);
           ctx.closePath();
           ctx.fillStyle = fill; ctx.fill();
-          if (stroke) { ctx.lineWidth = lw; ctx.strokeStyle = stroke; ctx.stroke(); }
-        };
-        const set = (size, color='#fff', align='left')=>{
-          ctx.font = `bold ${size}px Arial`; ctx.fillStyle = color; ctx.textAlign = align;
-        };
-        const setReg = (size, color='#fff', align='left')=>{
-          ctx.font = `${size}px Arial`; ctx.fillStyle = color; ctx.textAlign = align;
-        };
-        const wrapLines = (text, maxWidth, fontSetter)=>{
-          fontSetter();
-          const words = String(text).split(/\s+/);
-          const lines = [];
-          let cur = '';
-          for (const w of words) {
-            const test = cur ? cur + ' ' + w : w;
-            if (ctx.measureText(test).width <= maxWidth) cur = test;
-            else { if (cur) lines.push(cur); cur = w; }
-          }
-          if (cur) lines.push(cur);
-          return lines;
+          if (stroke) { ctx.lineWidth = 4; ctx.strokeStyle = stroke; ctx.stroke(); }
         };
 
         // Background
@@ -440,70 +422,122 @@
 
         const status = overallText(results.avgScore);
 
-        // Header
-        set(76,'#ffffff','center'); ctx.fillText('HYBRID ATHLETE', W/2, 160);
-        set(180,'#ffffff','center'); ctx.fillText(status.emoji, W/2, 360);
+        // Titolo principale (una riga, fit)
+        let titleSize = fitSingleLineSize('HYBRID ATHLETE', 90, 60, INNER_W, 'bold');
+        setFont(titleSize, 'bold', '#ffffff', 'center');
+        ctx.fillText('HYBRID ATHLETE', W/2, SAFE_TOP + titleSize);
 
-        set(56,'#fbbf24','center'); ctx.fillText(status.text, W/2, 510);
+        // Emoji
+        setFont(200, 'normal', '#fff', 'center');
+        ctx.fillText(status.emoji, W/2, SAFE_TOP + titleSize + 210);
 
-        set(168,'#ffffff','center'); ctx.fillText(String(results.avgScore), W/2, 700);
-        setReg(40,'#94a3b8','center'); ctx.fillText('Punteggio Medio', W/2, 750);
+        // Sottotitolo status: al massimo 2 righe, fit dinamico
+        let statusSize = 60;
+        let statusLines = wrapText(status.text, statusSize, INNER_W, 'bold');
+        while (statusLines.length > 2 && statusSize > 36) {
+          statusSize -= 2;
+          statusLines = wrapText(status.text, statusSize, INNER_W, 'bold');
+        }
+        const statusStartY = SAFE_TOP + titleSize + 280;
+        const afterStatusY = drawLinesCenter(statusLines, statusStartY, statusSize + 10, statusSize, 'bold');
 
-        setReg(42,'#cbd5e1','center'); ctx.fillText(`Categoria: ${results.category}`, W/2, 810);
+        // Punteggio grande
+        let scoreSize = 170;
+        if (results.avgScore > 99) scoreSize = 160; // piccolo aggiustamento per 3 cifre
+        setFont(scoreSize, 'bold', '#fff', 'center');
+        ctx.fillText(String(results.avgScore), W/2, afterStatusY + 120);
 
-        // --- Riepilogo dinamico
+        setFont(40, 'normal', '#94a3b8', 'center');
+        ctx.fillText('Punteggio Medio', W/2, afterStatusY + 165);
+
+        setFont(42, 'normal', '#cbd5e1', 'center');
+        ctx.fillText(`Categoria: ${results.category}`, W/2, afterStatusY + 210);
+
+        // --- Riepilogo dinamico ---
         const get = name => results.tests.find(t=>t.name===name && !t.placeholder);
         const squatT = get('Squat');
         const run1T  = get('1k Run');
         const run5T  = get('5k Run');
         const rhrT   = get('Battito a Riposo');
 
-        const boxX = 70, innerW = W - boxX*2;
+        // Costruzione righe riepilogo
+        const rows = [];
+        if (squatT) rows.push({ label: 'Squat:', value: `${squatT.value} kg  (${squatT.ratio}× BW)` });
+        if (run1T)  rows.push({ label: '1 km:',  value: `${run1T.value}` });
+        if (run5T)  rows.push({ label: '5 km:',  value: `${run5T.value}` });
+        if (rhrT)   rows.push({ label: 'RHR:',   value: `${rhrT.value} bpm` });
+
+        // Programma consigliato
+        const programTitle = results.program
+          ? `${results.program.title} (Programma ${results.program.key})`
+          : '';
+
+        // Misure box
+        const boxX = SAFE_LR;
         const pad = 36;
-        const maxLineW = innerW - pad*2;
+        const lineSize = 44;
+        const lineHeight = lineSize + 12;
 
-        let dynLines = 0;
-        const baseTitleH = 60;
-        if (squatT) dynLines++;
-        if (run1T)  dynLines++;
-        if (run5T)  dynLines++;
-        if (rhrT)   dynLines++;
-
-        let programTitle = '';
-        if (results.program) {
-          programTitle = `${results.program.title} (Programma ${results.program.key})`;
-        }
-        const programLines = programTitle
-          ? wrapLines(programTitle, maxLineW, ()=>setReg(44,'#ffffff','left')).length
-          : 0;
-
-        const lineH = 64;
-        const boxH = pad + baseTitleH + lineH*dynLines + (results.program? (lineH + programLines*lineH) : 0) + pad;
-
-        const boxY = 900;
-        drawRoundedRect(boxX, boxY, innerW, boxH, 28, 'rgba(0,0,0,0.25)');
-
-        set(50,'#ffffff','left'); ctx.fillText('RIEPILOGO PRESTAZIONI', boxX + pad, boxY + pad + 48);
-
-        let y = boxY + pad + 48 + 40;
-        const drawRow = (label, value)=>{
-          setReg(44,'#cbd5e1','left'); ctx.fillText(label, boxX + pad, y);
-          setReg(44,'#ffffff','left'); ctx.fillText(value, boxX + pad + 180, y);
-          y += lineH;
-        };
-        if (squatT) drawRow('Squat:', `${squatT.value} kg   (${squatT.ratio}× BW)`);
-        if (run1T)  drawRow('1 km:',  `${run1T.value}`);
-        if (run5T)  drawRow('5 km:',  `${run5T.value}`);
-        if (rhrT)   drawRow('RHR:',   `${rhrT.value} bpm`);
-
-        if (results.program) {
-          setReg(44,'#fbbf24','left'); ctx.fillText('Programma consigliato:', boxX + pad, y);
-          y += lineH;
-          const lines = wrapLines(programTitle, maxLineW, ()=>setReg(44,'#ffffff','left'));
-          for (const ln of lines) { setReg(44,'#ffffff','left'); ctx.fillText(ln, boxX + pad, y); y += lineH; }
+        // Altezza calcolata: titolo + righe + (spazio+programma)
+        let boxH = pad + 56 + 20 + rows.length * lineHeight + pad;
+        if (programTitle) {
+          // il titolo programma può andare a capo
+          let progSize = 44;
+          let progLines = wrapText(programTitle, progSize, INNER_W - pad*2, 'normal');
+          while (progLines.length > 2 && progSize > 36) {
+            progSize -= 2;
+            progLines = wrapText(programTitle, progSize, INNER_W - pad*2, 'normal');
+          }
+          boxH += 20 + (lineHeight * progLines.length) + 10 + lineHeight; // label + linee
         }
 
-        setReg(34,'#64748b','center'); ctx.fillText('nicholasrubini.it', W/2, H - 80);
+        const boxY = H - SAFE_BOT - boxH;
+        roundedRect(boxX, boxY, INNER_W, boxH);
+
+        // Titolo box
+        setFont(56, 'bold', '#ffffff', 'left');
+        ctx.fillText('RIEPILOGO PRESTAZIONI', boxX + pad, boxY + pad + 48);
+
+        // Righe valori
+        let y = boxY + pad + 48 + 30;
+        rows.forEach(r => {
+          // label
+          setFont(lineSize, 'normal', '#cbd5e1', 'left');
+          ctx.fillText(r.label, boxX + pad, y);
+
+          // value (wrap se lungo)
+          const valueMaxW = INNER_W - pad*2 - 180;
+          let vSize = lineSize;
+          let vLines = wrapText(r.value, vSize, valueMaxW, 'normal');
+          while (vLines.length > 2 && vSize > 36) {
+            vSize -= 2; vLines = wrapText(r.value, vSize, valueMaxW, 'normal');
+          }
+          setFont(vSize, 'normal', '#ffffff', 'left');
+          const vx = boxX + pad + 180;
+          vLines.forEach((ln, i) => {
+            ctx.fillText(ln, vx, y + i * (vSize + 10));
+          });
+          y += lineHeight;
+        });
+
+        // Programma consigliato
+        if (programTitle) {
+          setFont(44, 'normal', '#fbbf24', 'left');
+          ctx.fillText('Programma consigliato:', boxX + pad, y + 6);
+          y += lineHeight;
+
+          let progSize = 44;
+          let progLines = wrapText(programTitle, progSize, INNER_W - pad*2, 'normal');
+          while (progLines.length > 3 && progSize > 34) {
+            progSize -= 2; progLines = wrapText(programTitle, progSize, INNER_W - pad*2, 'normal');
+          }
+          setFont(progSize, 'normal', '#ffffff', 'left');
+          progLines.forEach(ln => { ctx.fillText(ln, boxX + pad, y); y += progSize + 10; });
+        }
+
+        // Footer
+        setFont(34, 'normal', '#64748b', 'center');
+        ctx.fillText('nicholasrubini.it', W/2, H - 70);
 
         canvas.toBlob((blob) => {
           if (!blob) { alert('Errore nella creazione dell’immagine.'); return; }
@@ -718,8 +752,7 @@
                 <div className="bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl p-4 md:p-6 shadow-2xl border-2 border-white/20 text-center">
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">Condividi o salva su iPhone</h3>
                   <p className="text-white/90 text-xs md:text-sm mb-4">
-                    iOS: si apre il foglio di condivisione → “Salva immagine” la invia all’app <b>Foto</b>.
-                    In alternativa, si apre l’immagine: tap prolungato → “Aggiungi a Foto”.
+                    iOS: si apre il foglio di condivisione → “Salva immagine” la invia all’app <b>Foto</b>. In alternativa si apre l’immagine: tap prolungato → “Aggiungi a Foto”.
                   </p>
                   <button onClick={generateShareImage} className="inline-flex items-center gap-2 bg-white text-purple-600 font-bold px-6 md:px-8 py-4 rounded-lg hover:bg-purple-50 transition-all transform hover:scale-105 shadow-xl text-sm md:text-base">
                     Condividi / Salva immagine
