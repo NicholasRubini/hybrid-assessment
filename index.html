@@ -44,34 +44,31 @@
       const s = sec % 60;
       return `${m}:${String(s).padStart(2, "0")}`;
     };
-    // iPhone-friendly: accetta solo numeri e formatta in mm:ss
-const formatTime = (raw) => {
-  if (!raw) return '';
-  const str = String(raw).trim();
 
-  // Se l'utente ha già scritto ":", normalizza
-  if (str.includes(':')) {
-    const [mp = '', sp = ''] = str.split(':');
-    let m = parseInt(mp.replace(/\D/g, ''), 10) || 0;
-    let s = parseInt(sp.replace(/\D/g, ''), 10) || 0;
-    if (s > 59) s = 59;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  }
-
-  // Solo cifre (tastiera numerica iPhone): ultime 2 = secondi
-  const digits = str.replace(/\D/g, '');
-  if (!digits) return '';
-  if (digits.length <= 2) {
-    let s = parseInt(digits, 10) || 0;
-    if (s > 59) s = 59;
-    return `0:${s.toString().padStart(2, '0')}`;
-  }
-  const m = parseInt(digits.slice(0, -2), 10) || 0;
-  let s = parseInt(digits.slice(-2), 10) || 0;
-  if (s > 59) s = 59;
-  return `${m}:${s.toString().padStart(2, '0')}`;
-};
-
+    // iPhone-friendly: input solo numerico → formattazione mm:ss (solo per 1k/5k)
+    const onlyDigits = (s) => s.split('').filter(ch => ch >= '0' && ch <= '9').join('');
+    const formatTime = (raw) => {
+      if (!raw) return '';
+      const str = String(raw).trim();
+      if (str.includes(':')) {
+        const [mp = '', sp = ''] = str.split(':');
+        let m = parseInt(onlyDigits(mp), 10) || 0;
+        let s = parseInt(onlyDigits(sp), 10) || 0;
+        if (s > 59) s = 59;
+        return `${m}:${String(s).padStart(2, '0')}`;
+      }
+      const digits = onlyDigits(str);
+      if (!digits) return '';
+      if (digits.length <= 2) {
+        let s = parseInt(digits, 10) || 0;
+        if (s > 59) s = 59;
+        return `0:${String(s).padStart(2, '0')}`;
+      }
+      const m = parseInt(digits.slice(0, -2), 10) || 0;
+      let s = parseInt(digits.slice(-2), 10) || 0;
+      if (s > 59) s = 59;
+      return `${m}:${String(s).padStart(2, '0')}`;
+    };
 
     // ---------- CLASSIFICATIONS (your thresholds) ----------
     const THRESHOLDS = {
@@ -415,11 +412,11 @@ const formatTime = (raw) => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">Peso (kg) <span className="text-red-400">*</span></label>
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="es. 3:55 • su iPhone digita 355" value={run1k} onChange={(e)=>setRun1k(formatTime(e.target.value))} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="number" inputMode="decimal" step="0.1" value={weight} onChange={(e)=>setWeight(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">Altezza (cm) <span className="text-red-400">*</span></label>
-                  <input type="text" inputMode="numeric" pattern="[0-9]*" placeholder="es. 24:30 • su iPhone digita 2430" value={run5k} onChange={(e)=>setRun5k(formatTime(e.target.value))} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="number" inputMode="numeric" value={height} onChange={(e)=>setHeight(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">Squat (kg) <span className="text-red-400">*</span></label>
@@ -427,11 +424,11 @@ const formatTime = (raw) => {
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">1k Run (mm:ss) <span className="text-yellow-400 text-sm">- almeno uno *</span></label>
-                  <input type="text" inputMode="numeric" placeholder="es. 3:59" value={run1k} onChange={(e)=>setRun1k(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="text" inputMode="numeric" placeholder="es. 3:59" value={run1k} onChange={(e)=>setRun1k(formatTime(e.target.value))} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div>
                   <label className="block text-slate-300 mb-2 font-medium">5k Run (mm:ss) <span className="text-yellow-400 text-sm">- almeno uno *</span></label>
-                  <input type="text" inputMode="numeric" placeholder="es. 24:30" value={run5k} onChange={(e)=>setRun5k(e.target.value)} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
+                  <input type="text" inputMode="numeric" placeholder="es. 24:30" value={run5k} onChange={(e)=>setRun5k(formatTime(e.target.value))} className="w-full bg-slate-700 text-white px-4 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-400" />
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-slate-300 mb-2 font-medium">Battito a Riposo (bpm) <span className="text-slate-500 text-sm">- opzionale</span></label>
@@ -441,7 +438,7 @@ const formatTime = (raw) => {
 
               <div className="mt-4 p-3 bg-slate-700/60 rounded-lg border border-slate-600 text-slate-400 text-xs">
                 <span className="text-red-400">*</span> Obbligatorio ·
-                <span className="text-yellow-400"> Almeno uno *</span> = inserisci 1k o 5k
+                <span className="text-yellow-400"> Almeno uno *</span> = inserisci 1k o 5k · Suggerimento iPhone: puoi digitare solo numeri (es. <code>355</code> → <code>3:55</code>)
               </div>
 
               <button onClick={calculateResults} className="w-full mt-6 md:mt-8 bg-gradient-to-r from-yellow-400 to-orange-500 text-slate-900 font-bold py-4 md:py-5 rounded-lg hover:from-yellow-500 hover:to-orange-600 transition-all transform hover:scale-[1.02] shadow-lg text-base md:text-lg">
