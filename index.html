@@ -173,6 +173,35 @@
            structure:{freq:'2–3 Strength + 3–4 Running', duration:'12 settimane'}, color:'from-blue-600 to-cyan-600'}
     };
 
+    // ---------- CTA snellite (A1, B1, C1, D1, E1) ----------
+    const CTA_TEXTS = {
+      A: {
+        headline: 'Sei già forte. Ora diventa anche veloce.',
+        subhead:  'Costruisci la base aerobica e migliora nella corsa senza perdere kg sul bilanciere.',
+        button:   'Diventa un Lifter che corre →'
+      },
+      B: {
+        headline: 'Crescita bilanciata, tempi più bassi.',
+        subhead:  'Migliora la corsa senza bloccare la forza, con una struttura chiara che riduce gli infortuni.',
+        button:   'Sali di livello su entrambi i fronti →'
+      },
+      C: {
+        headline: 'Le fondamenta prima di tutto.',
+        subhead:  'Tecnica, progressioni semplici e linee guida per ridurre gli infortuni.',
+        button:   'Inizia bene, progredisci sempre →'
+      },
+      D: {
+        headline: 'Picchi programmati su entrambi i fronti.',
+        subhead:  'Periodizzazione avanzata per PR di forza e corsa nello stesso ciclo, riducendo gli infortuni.',
+        button:   'Vai per la prestazione d’élite →'
+      },
+      E: {
+        headline: 'La forza che rende la corsa più efficiente.',
+        subhead:  'Metti kg al bilanciere, migliora l’economia di corsa e riduci gli infortuni.',
+        button:   'Inizia a sollevare… da runner →'
+      }
+    };
+
     const recommendProgramFromScores = ({ squatScore, runAvgScore }) => {
       const HIGH = 100, LOW = 92;
       const squatHigh = squatScore >= HIGH;
@@ -334,7 +363,7 @@
         setResults({ category: cat.replace('-', '–') + ' kg', tests, avgScore, completedTests, totalPossibleTests, program });
       };
 
-      // ---------- IMG: layout migliorato ----------
+      // ---------- IMG: layout (share) ----------
       const generateShareImage = () => {
         if (!results) { alert('Nessun risultato da condividere.'); return; }
         const canvas = canvasRef.current; if (!canvas) return;
@@ -392,7 +421,7 @@
 
         setReg(42,'#cbd5e1','center'); ctx.fillText(`Categoria: ${results.category}`, W/2, 810);
 
-        // --- Contenuti per riepilogo
+        // --- Riepilogo dinamico
         const get = name => results.tests.find(t=>t.name===name && !t.placeholder);
         const squatT = get('Squat');
         const run1T  = get('1k Run');
@@ -403,7 +432,6 @@
         const pad = 36;
         const maxLineW = innerW - pad*2;
 
-        // Calcolo altezza dinamica del box
         let dynLines = 0;
         const baseTitleH = 60;
         if (squatT) dynLines++;
@@ -411,7 +439,6 @@
         if (run5T)  dynLines++;
         if (rhrT)   dynLines++;
 
-        // Programma consigliato (wrappato)
         let programTitle = '';
         if (results.program) {
           programTitle = `${results.program.title} (Programma ${results.program.key})`;
@@ -423,16 +450,12 @@
         const lineH = 64;
         const boxH = pad + baseTitleH + lineH*dynLines + (results.program? (lineH + programLines*lineH) : 0) + pad;
 
-        // Disegno box
         const boxY = 900;
         drawRoundedRect(boxX, boxY, innerW, boxH, 28, 'rgba(0,0,0,0.25)');
 
-        // Titolo del box
         set(50,'#ffffff','left'); ctx.fillText('RIEPILOGO PRESTAZIONI', boxX + pad, boxY + pad + 48);
 
-        // Righe
-        let y = boxY + pad + 48 + 40; // piccola distanza sotto il titolo
-        setReg(44,'#cbd5e1','left');
+        let y = boxY + pad + 48 + 40;
         const drawRow = (label, value)=>{
           setReg(44,'#cbd5e1','left'); ctx.fillText(label, boxX + pad, y);
           setReg(44,'#ffffff','left'); ctx.fillText(value, boxX + pad + 180, y);
@@ -450,10 +473,8 @@
           for (const ln of lines) { setReg(44,'#ffffff','left'); ctx.fillText(ln, boxX + pad, y); y += lineH; }
         }
 
-        // Footer
         setReg(34,'#64748b','center'); ctx.fillText('nicholasrubini.it', W/2, H - 80);
 
-        // Blob + share
         canvas.toBlob((blob) => {
           if (!blob) { alert('Errore nella creazione dell’immagine.'); return; }
           shareOrDownload(blob);
@@ -571,6 +592,8 @@
                         {results.program.profile}
                       </p>
                     </div>
+
+                    {/* Focus & Struttura */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 md:mb-6">
                       <div className="bg-black/20 rounded-lg p-4">
                         <h4 className="text-white font-bold mb-3 text-sm md:text-base">Focus</h4>
@@ -584,10 +607,21 @@
                         <p className="text-white text-sm mt-1"><span className="opacity-70">Durata: </span><span className="font-semibold">{results.program.structure.duration}</span></p>
                       </div>
                     </div>
-                    <div className="text-center">
-                      <a href={CTA_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-6 md:px-8 py-4 rounded-lg hover:bg-slate-100 transition-all transform hover:scale-105 shadow-xl text-sm md:text-base">
-                        Scopri il Programma →
-                      </a>
+
+                    {/* CTA personalizzata (snella) */}
+                    <div className="bg-black/20 rounded-lg p-4 md:p-6 mb-2 md:mb-3">
+                      <h4 className="text-white text-lg md:text-xl font-bold mb-1">
+                        {CTA_TEXTS[results.program.key].headline}
+                      </h4>
+                      <p className="text-white/90 text-sm md:text-base mb-4">
+                        {CTA_TEXTS[results.program.key].subhead}
+                      </p>
+                      <div className="text-center">
+                        <a href={CTA_URL} target="_blank" rel="noopener noreferrer"
+                           className="inline-flex items-center gap-2 bg-white text-slate-900 font-bold px-6 md:px-8 py-4 rounded-lg hover:bg-slate-100 transition-all transform hover:scale-105 shadow-xl text-sm md:text-base">
+                          {CTA_TEXTS[results.program.key].button}
+                        </a>
+                      </div>
                     </div>
                   </div>
                 )}
