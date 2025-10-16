@@ -26,7 +26,6 @@
     const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
     const onlyDigits = (s) => (s || "").replace(/\D/g, "");
 
-    // Parser tollerante: "m:ss" o "mm:ss"; solo cifre => "mmss" (0330 -> 3:30)
     const timeToSeconds = (raw) => {
       if (!raw) return null;
       const str = String(raw).trim();
@@ -59,7 +58,6 @@
       return `${m}:${String(s).padStart(2, "0")}`;
     };
 
-    // Normalizza SOLO onBlur
     const normalizeTimeOnBlur = (raw) => {
       if (!raw) return "";
       const str = String(raw).trim();
@@ -101,7 +99,7 @@
       return null;
     };
 
-    // Piecewise score
+    // Scoring
     const scoreFromAnchors = (value, anchors, better='higher') => {
       const SCALE = { S:80, I:92, A:100, E:110 };
       const MIN=60, MAX=118;
@@ -190,23 +188,17 @@
     };
 
     const CTA_URL = 'https://www.nicholasrubini.it/prodotto/scheda-hybrid-athlete/';
-
-    // iOS detection (incluso iPadOS con UA "MacIntel")
     const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
-    // Condivisione/salvataggio immagine
     const shareOrDownload = (blob, filename = 'hybrid-athlete-results.png') => {
-      // Web Share API con file (iOS 15+/Safari 15+)
       try {
         const file = new File([blob], filename, { type: 'image/png' });
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          navigator.share({ files: [file], title: 'Hybrid Athlete', text: 'I miei risultati Hybrid Athlete' })
-            .catch(() => {}); // utente può annullare
+          navigator.share({ files: [file], title: 'Hybrid Athlete', text: 'I miei risultati Hybrid Athlete' }).catch(()=>{});
           return;
         }
       } catch (_) {}
 
-      // Fallback iOS: apri in nuova scheda → tap prolungato → “Aggiungi a Foto”
       if (isIOS()) {
         const url = URL.createObjectURL(blob);
         window.open(url, '_blank');
@@ -215,7 +207,6 @@
         return;
       }
 
-      // Desktop: download classico
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = filename;
@@ -343,117 +334,126 @@
         setResults({ category: cat.replace('-', '–') + ' kg', tests, avgScore, completedTests, totalPossibleTests, program });
       };
 
-      // Canvas con riepilogo + condivisione iOS
+      // ---------- IMG: layout migliorato ----------
       const generateShareImage = () => {
         if (!results) { alert('Nessun risultato da condividere.'); return; }
         const canvas = canvasRef.current; if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const width = 1080, height = 1920;
-        canvas.width = width; canvas.height = height;
+        const W = 1080, H = 1920;
+        canvas.width = W; canvas.height = H;
+
+        // Helpers
+        const drawRoundedRect = (x,y,w,h,r=24,fill='#000',stroke='rgba(255,255,255,0.2)',lw=4)=>{
+          ctx.beginPath();
+          ctx.moveTo(x+r,y);
+          ctx.arcTo(x+w,y,x+w,y+h,r);
+          ctx.arcTo(x+w,y+h,x,y+h,r);
+          ctx.arcTo(x,y+h,x,y,r);
+          ctx.arcTo(x,y,x+w,y,r);
+          ctx.closePath();
+          ctx.fillStyle = fill; ctx.fill();
+          if (stroke) { ctx.lineWidth = lw; ctx.strokeStyle = stroke; ctx.stroke(); }
+        };
+        const set = (size, color='#fff', align='left')=>{
+          ctx.font = `bold ${size}px Arial`; ctx.fillStyle = color; ctx.textAlign = align;
+        };
+        const setReg = (size, color='#fff', align='left')=>{
+          ctx.font = `${size}px Arial`; ctx.fillStyle = color; ctx.textAlign = align;
+        };
+        const wrapLines = (text, maxWidth, fontSetter)=>{
+          fontSetter();
+          const words = String(text).split(/\s+/);
+          const lines = [];
+          let cur = '';
+          for (const w of words) {
+            const test = cur ? cur + ' ' + w : w;
+            if (ctx.measureText(test).width <= maxWidth) cur = test;
+            else { if (cur) lines.push(cur); cur = w; }
+          }
+          if (cur) lines.push(cur);
+          return lines;
+        };
 
         // Background
-        const grad = ctx.createLinearGradient(0,0,0,height);
+        const grad = ctx.createLinearGradient(0,0,0,H);
         grad.addColorStop(0,'#0f172a'); grad.addColorStop(0.5,'#1e293b'); grad.addColorStop(1,'#0f172a');
-        ctx.fillStyle = grad; ctx.fillRect(0,0,width,height);
+        ctx.fillStyle = grad; ctx.fillRect(0,0,W,H);
 
         const status = overallText(results.avgScore);
-        ctx.textAlign = 'center';
 
-        // Titolo
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 80px Arial';
-        ctx.fillText('HYBRID ATHLETE', width/2, 180);
+        // Header
+        set(76,'#ffffff','center'); ctx.fillText('HYBRID ATHLETE', W/2, 160);
+        set(180,'#ffffff','center'); ctx.fillText(status.emoji, W/2, 360);
 
-        // Emoji
-        ctx.font = '200px Arial';
-        ctx.fillText(status.emoji, width/2, 420);
+        set(56,'#fbbf24','center'); ctx.fillText(status.text, W/2, 510);
 
-        // Stato
-        ctx.font = 'bold 58px Arial';
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillText(status.text, width/2, 560);
+        set(168,'#ffffff','center'); ctx.fillText(String(results.avgScore), W/2, 700);
+        setReg(40,'#94a3b8','center'); ctx.fillText('Punteggio Medio', W/2, 750);
 
-        // Score medio
-        ctx.font = 'bold 170px Arial';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillText(String(results.avgScore), width/2, 750);
-        ctx.font = '40px Arial';
-        ctx.fillStyle = '#94a3b8';
-        ctx.fillText('Punteggio Medio', width/2, 800);
+        setReg(42,'#cbd5e1','center'); ctx.fillText(`Categoria: ${results.category}`, W/2, 810);
 
-        // Categoria
-        ctx.font = '42px Arial';
-        ctx.fillStyle = '#cbd5e1';
-        ctx.fillText(`Categoria: ${results.category}`, width/2, 860);
-
-        // Box riepilogo
-        const boxX = 90, boxY = 940, boxW = width - 180, boxH = 580;
-        ctx.fillStyle = 'rgba(0,0,0,0.25)';
-        ctx.fillRect(boxX, boxY, boxW, boxH);
-        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-        ctx.lineWidth = 4;
-        ctx.strokeRect(boxX, boxY, boxW, boxH);
-
-        ctx.textAlign = 'left';
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 50px Arial';
-        ctx.fillText('RIEPILOGO PRESTAZIONI', boxX + 40, boxY + 80);
-
-        // Estrai valori per riepilogo
+        // --- Contenuti per riepilogo
         const get = name => results.tests.find(t=>t.name===name && !t.placeholder);
         const squatT = get('Squat');
         const run1T  = get('1k Run');
         const run5T  = get('5k Run');
         const rhrT   = get('Battito a Riposo');
 
-        ctx.font = '44px Arial';
-        let y = boxY + 150;
-        if (squatT) {
-          ctx.fillStyle = '#cbd5e1';
-          ctx.fillText('Squat:', boxX + 40, y);
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(`${squatT.value} kg  (${squatT.ratio}× BW)`, boxX + 220, y);
-          y += 70;
-        }
-        if (run1T) {
-          ctx.fillStyle = '#cbd5e1';
-          ctx.fillText('1 km:', boxX + 40, y);
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(`${run1T.value}`, boxX + 220, y);
-          y += 70;
-        }
-        if (run5T) {
-          ctx.fillStyle = '#cbd5e1';
-          ctx.fillText('5 km:', boxX + 40, y);
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(`${run5T.value}`, boxX + 220, y);
-          y += 70;
-        }
-        if (rhrT) {
-          ctx.fillStyle = '#cbd5e1';
-          ctx.fillText('RHR:', boxX + 40, y);
-          ctx.fillStyle = '#ffffff';
-          ctx.fillText(`${rhrT.value} bpm`, boxX + 220, y);
-          y += 70;
-        }
+        const boxX = 70, innerW = W - boxX*2;
+        const pad = 36;
+        const maxLineW = innerW - pad*2;
 
-        // Programma consigliato
+        // Calcolo altezza dinamica del box
+        let dynLines = 0;
+        const baseTitleH = 60;
+        if (squatT) dynLines++;
+        if (run1T)  dynLines++;
+        if (run5T)  dynLines++;
+        if (rhrT)   dynLines++;
+
+        // Programma consigliato (wrappato)
+        let programTitle = '';
         if (results.program) {
-          ctx.fillStyle = '#fbbf24';
-          ctx.font = 'bold 44px Arial';
-          ctx.fillText('Programma consigliato:', boxX + 40, y + 20);
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '44px Arial';
-          ctx.fillText(`${results.program.key} — ${results.program.title}`, boxX + 500, y + 20);
+          programTitle = `${results.program.title} (Programma ${results.program.key})`;
+        }
+        const programLines = programTitle
+          ? wrapLines(programTitle, maxLineW, ()=>setReg(44,'#ffffff','left')).length
+          : 0;
+
+        const lineH = 64;
+        const boxH = pad + baseTitleH + lineH*dynLines + (results.program? (lineH + programLines*lineH) : 0) + pad;
+
+        // Disegno box
+        const boxY = 900;
+        drawRoundedRect(boxX, boxY, innerW, boxH, 28, 'rgba(0,0,0,0.25)');
+
+        // Titolo del box
+        set(50,'#ffffff','left'); ctx.fillText('RIEPILOGO PRESTAZIONI', boxX + pad, boxY + pad + 48);
+
+        // Righe
+        let y = boxY + pad + 48 + 40; // piccola distanza sotto il titolo
+        setReg(44,'#cbd5e1','left');
+        const drawRow = (label, value)=>{
+          setReg(44,'#cbd5e1','left'); ctx.fillText(label, boxX + pad, y);
+          setReg(44,'#ffffff','left'); ctx.fillText(value, boxX + pad + 180, y);
+          y += lineH;
+        };
+        if (squatT) drawRow('Squat:', `${squatT.value} kg   (${squatT.ratio}× BW)`);
+        if (run1T)  drawRow('1 km:',  `${run1T.value}`);
+        if (run5T)  drawRow('5 km:',  `${run5T.value}`);
+        if (rhrT)   drawRow('RHR:',   `${rhrT.value} bpm`);
+
+        if (results.program) {
+          setReg(44,'#fbbf24','left'); ctx.fillText('Programma consigliato:', boxX + pad, y);
+          y += lineH;
+          const lines = wrapLines(programTitle, maxLineW, ()=>setReg(44,'#ffffff','left'));
+          for (const ln of lines) { setReg(44,'#ffffff','left'); ctx.fillText(ln, boxX + pad, y); y += lineH; }
         }
 
         // Footer
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#64748b';
-        ctx.font = '35px Arial';
-        ctx.fillText('nicholasrubini.it', width/2, height - 80);
+        setReg(34,'#64748b','center'); ctx.fillText('nicholasrubini.it', W/2, H - 80);
 
-        // Blob + Share/Save
+        // Blob + share
         canvas.toBlob((blob) => {
           if (!blob) { alert('Errore nella creazione dell’immagine.'); return; }
           shareOrDownload(blob);
@@ -654,7 +654,7 @@
                 <div className="bg-gradient-to-r from-pink-600 to-purple-600 rounded-2xl p-4 md:p-6 shadow-2xl border-2 border-white/20 text-center">
                   <h3 className="text-xl md:text-2xl font-bold text-white mb-2 md:mb-3">Condividi o salva su iPhone</h3>
                   <p className="text-white/90 text-xs md:text-sm mb-4">
-                    iOS: si apre il foglio di condivisione → “Salva immagine” la invia all’app **Foto**.
+                    iOS: si apre il foglio di condivisione → “Salva immagine” la invia all’app <b>Foto</b>.
                     In alternativa, si apre l’immagine: tap prolungato → “Aggiungi a Foto”.
                   </p>
                   <button onClick={generateShareImage} className="inline-flex items-center gap-2 bg-white text-purple-600 font-bold px-6 md:px-8 py-4 rounded-lg hover:bg-purple-50 transition-all transform hover:scale-105 shadow-xl text-sm md:text-base">
